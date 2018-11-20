@@ -1,0 +1,202 @@
+﻿<Window x:Class="Alarm.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:my="clr-namespace:Alarm"
+        Name="root"
+        Width="488"
+        Height="319"
+        FontSize="14"
+        Icon="/Alarm;component/Images/Alarm-clock-icon16.ico"
+        ResizeMode="CanMinimize"
+        SizeToContent="Height"
+        Topmost="True"
+        ShowActivated="False"
+        WindowStartupLocation="CenterScreen"
+        mc:Ignorable="d">
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="boolToVis" />
+        <my:DoubleToTimeLeftConverter x:Key="doubleToTimeLeftConverter" />
+        <my:IsGreaterThanFirstTickConverter x:Key="isGreaterThanFirstTickConverter" />
+        <my:DoubleToTimeConverter x:Key="doubleToTimeConverter" />
+        <my:IsGreaterThanOneConverter x:Key="isGreaterThanOneConverter" />
+        <Color x:Key="alarmBackgroundColour">PaleTurquoise</Color>
+    </Window.Resources>
+    <Window.DataContext>
+        <my:ViewModel />
+    </Window.DataContext>
+    <Window.Title>
+        <Binding Converter="{StaticResource doubleToTimeConverter}" Path="MinAlarm.TimeLeft" />
+    </Window.Title>
+    <Grid>
+        <StackPanel>
+            <Button Command="{Binding AddAlarmCommand}"
+                    Content="Add alarm"
+                    IsTabStop="False" />
+            <ItemsControl Name="listBox1"
+                          HorizontalContentAlignment="Stretch"
+                          Background="Beige"
+                          IsTabStop="False"
+                          ItemsSource="{Binding Alarms}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Margin="5"
+                                BorderBrush="#FF003200"
+                                BorderThickness="3"
+                                Slider.ValueChanged="Border_ValueChanged"
+                                Tag="{Binding ElementName=cbxPopup,
+                                              Path=IsChecked}">
+                            <StackPanel Name="stack">
+                                <StackPanel.Background>
+                                    <SolidColorBrush Color="{StaticResource alarmBackgroundColour}" />
+                                </StackPanel.Background>
+                                <DockPanel>
+                                    <Button Grid.Column="1"
+                                            Width="30"
+                                            Height="30"
+                                            Margin="4"
+                                            Command="{Binding CloseCommand}"
+                                            DockPanel.Dock="Right"
+                                            Focusable="False"
+                                            IsEnabled="{Binding DataContext.Alarms.Count,
+                                                                RelativeSource={RelativeSource AncestorType=ItemsControl},
+                                                                Converter={StaticResource isGreaterThanOneConverter}}"
+                                            IsTabStop="False">
+                                        <Button.Background>
+                                            <RadialGradientBrush Center="0.6,0.2" GradientOrigin="0.6,0.2" RadiusX="1.5" RadiusY="1.5">
+                                                <GradientStop Color="#FFFFBFBF" />
+                                                <GradientStop Offset="0.8" Color="Red" />
+                                            </RadialGradientBrush>
+                                        </Button.Background>
+                                        <Image>
+                                            <Image.Source>
+                                                <DrawingImage>
+                                                    <DrawingImage.Drawing>
+                                                        <GeometryDrawing Geometry="M 0,0 L 5,5 M 5,0 L 0,5">
+                                                            <GeometryDrawing.Pen>
+                                                                <Pen EndLineCap="Round"
+                                                                     StartLineCap="Round"
+                                                                     Thickness="1">
+                                                                    <Pen.DashStyle>
+                                                                        <DashStyle />
+                                                                    </Pen.DashStyle>
+                                                                    <Pen.Brush>
+                                                                        <RadialGradientBrush Center="0.6,0.2" GradientOrigin="0.6,0.2" RadiusX="1.5" RadiusY="1.5">
+                                                                            <GradientStop Color="#FF787878" />
+                                                                            <GradientStop Offset="1" Color="Black" />
+                                                                        </RadialGradientBrush>
+                                                                    </Pen.Brush>
+                                                                </Pen>
+                                                            </GeometryDrawing.Pen>
+                                                        </GeometryDrawing>
+                                                    </DrawingImage.Drawing>
+                                                </DrawingImage>
+                                            </Image.Source>
+                                        </Image>
+                                    </Button>
+                                    <StackPanel VerticalAlignment="Center"
+                                                Panel.ZIndex="1"
+                                                DockPanel.Dock="Right">
+                                        <CheckBox Name="cbxSound"
+                                                  VerticalAlignment="Center"
+                                                  ToolTip="A sound will play when the alarm fires">
+                                            <TextBlock Text="Sound" />
+                                        </CheckBox>
+                                        <CheckBox Name="cbxPopup"
+                                                  VerticalAlignment="Center"
+                                                  IsChecked="True"
+                                                  ToolTip="The Alarm window will popup when the alarm fires">
+                                            <TextBlock Text="Popup" />
+                                        </CheckBox>
+                                    </StackPanel>
+                                    <Border Margin="2"
+                                            Panel.ZIndex="0"
+                                            BorderBrush="Black"
+                                            BorderThickness="1">
+                                        <Grid Background="White" ToolTip="Type a description for the alarm here.">
+                                            <TextBlock Margin="2,2"
+                                                       VerticalAlignment="Center"
+                                                       FontStyle="Italic"
+                                                       Foreground="LightGray"
+                                                       Text="Description"
+                                                       Visibility="{Binding ElementName=txtUserEntry,
+                                                                            Path=Text.IsEmpty,
+                                                                            Converter={StaticResource boolToVis}}" />
+                                            <TextBox Name="txtUserEntry"
+                                                     VerticalContentAlignment="Center"
+                                                     Background="Transparent"
+                                                     BorderThickness="0"
+                                                     KeyDown="txtUserEntry_KeyDown"
+                                                     Loaded="txtUserEntry_Loaded" />
+                                        </Grid>
+                                    </Border>
+                                </DockPanel>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="80" />
+                                    </Grid.ColumnDefinitions>
+                                    <Slider Name="sld"
+                                            Margin="3"
+                                            Focusable="False"
+                                            Foreground="Brown"
+                                            IsTabStop="False"
+                                            LargeChange="1000"
+                                            Maximum="3600000"
+                                            Minimum="0"
+                                            TickFrequency="60000"
+                                            TickPlacement="Both"
+                                            ToolTip="Drag to set the timer, hold Shift for finer grain."
+                                            Value="{Binding TimeLeft,
+                                                            Mode=TwoWay,
+                                                            NotifyOnTargetUpdated=False}" />
+                                    <TextBlock Grid.Column="1"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center"
+                                               FontSize="24"
+                                               Foreground="Red"
+                                               Text="{Binding ElementName=sld,
+                                                              Path=Value,
+                                                              Converter={StaticResource doubleToTimeLeftConverter}}" />
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+                        <DataTemplate.Triggers>
+                            <!--  Trigger for the sound  -->
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding ElementName=sld, Path=Tag}" Value="Started" />
+                                    <Condition Binding="{Binding ElementName=sld, Path=Value}" Value="0" />
+                                    <Condition Binding="{Binding ElementName=cbxSound, Path=IsChecked}" Value="True" />
+                                </MultiDataTrigger.Conditions>
+                                <MultiDataTrigger.EnterActions>
+                                    <SoundPlayerAction Source="Sounds/FireAlarm.wav" />
+                                </MultiDataTrigger.EnterActions>
+                            </MultiDataTrigger>
+                            <!--  Trigger for the animation  -->
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding ElementName=sld, Path=Tag}" Value="Started" />
+                                    <Condition Binding="{Binding ElementName=sld, Path=Value}" Value="0" />
+                                </MultiDataTrigger.Conditions>
+                                <MultiDataTrigger.EnterActions>
+                                    <BeginStoryboard Name="flash">
+                                        <Storyboard Storyboard.TargetProperty="Background.(SolidColorBrush.Color)" TargetName="stack">
+                                            <ColorAnimation AutoReverse="True"
+                                                            Duration="0:0:0.1"
+                                                            From="MediumSpringGreen"
+                                                            RepeatBehavior="0:0:5"
+                                                            To="Crimson" />
+                                            <ColorAnimation BeginTime="0:0:5" To="{StaticResource alarmBackgroundColour}" />
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </MultiDataTrigger.EnterActions>
+                            </MultiDataTrigger>
+                        </DataTemplate.Triggers>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </StackPanel>
+    </Grid>
+</Window>
